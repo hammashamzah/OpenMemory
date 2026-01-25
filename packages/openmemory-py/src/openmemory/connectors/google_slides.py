@@ -74,7 +74,7 @@ class google_slides_connector(base_connector):
         slides = []
         for i, slide in enumerate(pres.get("slides", [])):
             slides.append({
-                "id": f"{presentation_id}
+                "id": f"{presentation_id},
                 "name": f"Slide {i + 1}",
                 "type": "slide",
                 "index": i,
