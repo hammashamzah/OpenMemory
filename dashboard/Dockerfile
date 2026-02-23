@@ -1,26 +1,26 @@
 # ===== BUILD STAGE =====
-FROM node:20-bookworm-slim AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy source code
 COPY . .
 
-# Build the Next.js application (extra memory for large builds)
-RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
+# Build the Next.js application
+RUN npm run build
 
 # ===== PRODUCTION STAGE =====
-FROM node:20-bookworm-slim AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
 # Install only production dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Copy built assets from builder
 COPY --from=builder /app/.next ./.next
@@ -28,8 +28,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.ts ./next.config.ts
 
 # Create a dedicated non-root user for security
-RUN groupadd -g 1001 nodejs \
- && useradd -u 1001 -g nodejs -s /bin/sh nextjs \
+RUN addgroup -g 1001 -S nodejs \
+ && adduser -u 1001 -S nextjs -G nodejs \
  && chown -R nextjs:nodejs /app
 
 USER nextjs
